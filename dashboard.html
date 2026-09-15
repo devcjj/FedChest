@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FedChest AI — Clinical Radiograph & Training Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d10;
+      --panel-bg: rgba(18, 26, 31, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-teal: #00f2fe;
+      --accent-cyan: #4facfe;
+      --accent-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --text-main: #f0f6f6;
+      --text-muted: #8e9ea7;
+      --risk-high: #ff4d6d;
+      --risk-moderate: #ffb703;
+      --risk-low: #00f2fe;
+      --font-main: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(79, 172, 254, 0.05) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Glassmorphism Header */
+    header {
+      background: rgba(13, 20, 24, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+    }
+
+    .brand-logo svg {
+      width: 24px;
+      height: 24px;
+      fill: #090d10;
+    }
+
+    .brand-text h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn.active {
+      background: var(--accent-gradient);
+      color: #090d10;
+      font-weight: 600;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--panel-border);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    /* Main Grid Layout */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 28px;
+      width: 100%;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Upload Drag & Drop Area */
+    .dropzone {
+      border: 2px dashed rgba(0, 242, 254, 0.25);
+      background: rgba(0, 242, 254, 0.02);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-teal);
+      background: rgba(0, 242, 254, 0.06);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .dropzone-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-teal);
+    }
+
+    .file-name {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--accent-teal);
+      word-break: break-all;
+    }
+
+    /* Form Controls */
+    .form-group { margin-top: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    input[type="number"], select, input[type="text"] {
+      width: 100%;
+      background: rgba(9, 13, 16, 0.6);
+      border: 1px solid var(--panel-border);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .btn-action {
+      width: 100%;
+      margin-top: 20px;
+      background: var(--accent-gradient);
+      color: #090d10;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 242, 254, 0.25);
+    }
+
+    .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status-text {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--risk-moderate);
+      text-align: center;
+      min-height: 20px;
+    }
+
+    /* Pathology Checkbox Grid for Training Data Upload */
+    .label-checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 8px;
+      background: rgba(9, 13, 16, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      accent-color: var(--accent-teal);
+    }
+
+    /* Viewers & Workspace */
+    .workspace { display: flex; flex-direction: column; gap: 24px; }
+
+    .viewer-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .viewer-box {
+      background: #000;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      position: relative;
+      overflow: hidden;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .viewer-box img, .viewer-box canvas { max-width: 100%; max-height: 320px; object-fit: contain; }
+
+    .viewer-label {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(9, 13, 16, 0.8);
+      backdrop-filter: blur(8px);
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 0.75rem; color: var(--text-muted);
+      border: 1px solid var(--panel-border);
+    }
+
+    /* Pathology Grid */
+    .prob-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .prob-card {
+      background: rgba(9, 13, 16, 0.4);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .prob-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500; }
+    .prob-val { font-family: var(--font-mono); font-weight: 600; }
+    .bar-bg { height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    /* Report Box */
+    .report-box { display: flex; flex-direction: column; gap: 16px; }
+    .report-section { border-left: 3px solid var(--accent-teal); padding-left: 14px; }
+    .report-section h4 { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .report-section p { font-size: 0.95rem; line-height: 1.5; }
+    .stats-footer { display: flex; justify-content: space-between; border-top: 1px solid var(--panel-border); padding-top: 14px; font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+    /* Progress & Training Monitor */
+    .progress-bar-bg {
+      width: 100%; height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px; overflow: hidden; margin-top: 12px;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%;
+      background: var(--accent-gradient);
+      transition: width 0.3s ease;
+    }
+
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; }
+      .viewer-container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>FedChest AI</h1>
+        <p>Federated Medical Decision Support & Local Fine-Tuning</p>
+      </div>
+    </div>
+
+    <!-- Mode Switcher -->
+    <div class="nav-tabs">
+      <button class="nav-btn active" id="tab-inference-btn">Clinical Inference</button>
+      <button class="nav-btn" id="tab-training-btn">Local Model Training Hub</button>
+    </div>
+
+    <div class="header-badges">
+      <div class="badge" id="api-badge">
+        <div class="dot"></div>
+        <span id="api-status">Connecting to Backend...</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- MODE 1: INFERENCE SIDEBAR -->
+    <section class="card" id="sidebar-inference">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Analyze Patient Radiograph
+      </div>
+
+      <div class="dropzone" id="inf-dropzone">
+        <input type="file" id="inf-file-input" accept=".png,.jpg,.jpeg,.dcm">
+        <div class="dropzone-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500;">Drop DICOM (.dcm) or PNG/JPG scan</div>
+        <div class="file-name" id="inf-file-name"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Patient Metadata</label>
+        <div class="form-row">
+          <div>
+            <label for="inf-age">Age</label>
+            <input type="number" id="inf-age" min="0" max="120" value="58">
+          </div>
+          <div>
+            <label for="inf-sex">Sex</label>
+            <select id="inf-sex">
+              <option value="M">Male (M)</option>
+              <option value="F">Female (F)</option>
+              <option value="O">Other (O)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inf-view">View Position</label>
+        <select id="inf-view">
+          <option value="PA">Posteroanterior (PA)</option>
+          <option value="AP">Anteroposterior (AP)</option>
+        </select>
+      </div>
+
+      <button class="btn-action" id="inf-analyze-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Run AI Inference
+      </button>
+
+      <div class="status-text" id="inf-status-msg"></div>
+    </section>
+
+    <!-- MODE 2: LOCAL TRAINING SIDEBAR -->
+    <section class="card" id="sidebar-training" style="display: none;">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Add Training Scan to Local Hospital
+      </div>
+
+      <div class="form-group">
+        <label for="train-node-select">Select Hospital Node</label>
+        <select id="train-node-select">
+          <option value="hospital_nih">Hospital NIH (25,008 samples)</option>
+          <option value="hospital_rsna">Hospital RSNA (30,227 samples)</option>
+          <option value="hospital_siim">Hospital SIIM (500 samples)</option>
+        </select>
+      </div>
+
+      <div class="dropzone" id="train-dropzone" style="margin-top: 14px;">
+        <input type="file" id="train-file-input" accept=".png,.jpg,.jpeg,.dcm">
+        <div class="dropzone-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500;">Select Training Scan</div>
+        <div class="file-name" id="train-file-name"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Ground-Truth Pathology Labels</label>
+        <div class="label-checkbox-grid" id="label-checkboxes">
+          <!-- Checkboxes dynamically generated in JS -->
+        </div>
+      </div>
+
+      <button class="btn-action" id="upload-sample-btn" style="margin-top: 14px; background: rgba(0, 242, 254, 0.15); border: 1px solid var(--accent-teal); color: var(--accent-teal);">
+        Add Scan to Node Dataset
+      </button>
+
+      <div style="border-top: 1px solid var(--panel-border); margin-top: 18px; padding-top: 14px;">
+        <div class="form-row">
+          <div>
+            <label for="train-epochs">Epochs</label>
+            <input type="number" id="train-epochs" min="1" max="20" value="2">
+          </div>
+          <div>
+            <label for="train-batch">Batch Size</label>
+            <input type="number" id="train-batch" min="1" max="32" value="4">
+          </div>
+        </div>
+
+        <button class="btn-action" id="start-local-train-btn">
+          Start Local Training
+        </button>
+      </div>
+
+      <div class="status-text" id="train-status-msg"></div>
+    </section>
+
+    <!-- RIGHT WORKSPACE PANELS -->
+    <div class="workspace">
+
+      <!-- MODE 1 WORKSPACE: Visual Heatmap, Classification Grid & Report -->
+      <div id="workspace-inference" style="display: flex; flex-direction: column; gap: 24px;">
+
+        <section class="card">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            Visual Explainability & Anomaly Localization
+          </div>
+
+          <div class="viewer-container">
+            <div class="viewer-box">
+              <div class="viewer-label">Raw Radiograph</div>
+              <img id="raw-preview" alt="Raw Scan Preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23090d10'/%3E%3Ctext x='50%25' y='50%25' fill='%238e9ea7' dominant-baseline='middle' text-anchor='middle'%3ENo Scan Uploaded%3C/text%3E%3C/svg%3E">
+            </div>
+
+            <div class="viewer-box">
+              <div class="viewer-label">Grad-CAM Saliency & Bounding Boxes</div>
+              <canvas id="overlay-canvas"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            14-Pathology Differential Analysis
+          </div>
+
+          <div class="prob-grid" id="prob-grid">
+            <div style="grid-column: 1 / -1; color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 20px;">
+              Submit a chest radiograph to view multi-pathology probabilities.
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="report-card" style="display: none;">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Structured Clinical AI Report
+          </div>
+
+          <div class="report-box">
+            <div class="report-section">
+              <h4>Clinical Indication</h4>
+              <p id="report-indication">-</p>
+            </div>
+
+            <div class="report-section">
+              <h4>Detailed Findings</h4>
+              <p id="report-findings">-</p>
+            </div>
+
+            <div class="report-section" style="border-left-color: var(--risk-high);">
+              <h4>Primary Impression</h4>
+              <p id="report-impression" style="font-weight: 600; color: var(--text-main);">-</p>
+            </div>
+
+            <div class="stats-footer">
+              <span id="phi-stats">0 DICOM tags stripped</span>
+              <span id="latency-stats">Latency: 0 ms</span>
+              <span style="color: var(--text-muted); font-size: 0.75rem;">Decision support only; not a diagnosis.</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- MODE 2 WORKSPACE: Local Model Training Monitor -->
+      <div id="workspace-training" style="display: none; flex-direction: column; gap: 24px;">
+        <section class="card">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Local Hospital Training Monitor & Progress
+          </div>
+
+          <div style="background: rgba(9, 13, 16, 0.6); padding: 20px; border-radius: 12px; border: 1px solid var(--panel-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 600; font-size: 1rem;" id="monitor-status">System Ready for Training</span>
+              <span style="font-family: var(--font-mono); color: var(--accent-teal);" id="monitor-loss">Loss: --</span>
+            </div>
+
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="monitor-progress-bar"></div>
+            </div>
+
+            <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);" id="monitor-details">
+              Select a hospital node dataset and click "Start Local Training".
+            </div>
+          </div>
+        </section>
+
+        <!-- Node Datasets Summary -->
+        <section class="card">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Active Federated Hospital Node Datasets
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;" id="node-cards-container">
+            <div style="background: rgba(9, 13, 16, 0.5); padding: 16px; border-radius: 10px; border: 1px solid var(--panel-border);">
+              <h4 style="color: var(--accent-teal);">Hospital NIH</h4>
+              <p style="font-size: 1.2rem; font-weight: 700; margin-top: 6px;">25,008 samples</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Multi-label pathology + BBoxes</p>
+            </div>
+            <div style="background: rgba(9, 13, 16, 0.5); padding: 16px; border-radius: 10px; border: 1px solid var(--panel-border);">
+              <h4 style="color: var(--accent-cyan);">Hospital RSNA</h4>
+              <p style="font-size: 1.2rem; font-weight: 700; margin-top: 6px;">30,227 samples</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Pneumonia DICOM BBoxes</p>
+            </div>
+            <div style="background: rgba(9, 13, 16, 0.5); padding: 16px; border-radius: 10px; border: 1px solid var(--panel-border);">
+              <h4 style="color: var(--risk-moderate);">Hospital SIIM</h4>
+              <p style="font-size: 1.2rem; font-weight: 700; margin-top: 6px;">500 samples</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Pneumothorax RLE Masks</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const LABELS = ["Atelectasis", "Cardiomegaly", "Consolidation", "Edema", "Effusion", "Emphysema", "Fibrosis", "Hernia", "Infiltration", "Mass", "Nodule", "Pleural Thickening", "Pneumonia", "Pneumothorax"];
+
+    // Populate Label Checkboxes
+    const labelContainer = document.getElementById('label-checkboxes');
+    labelContainer.innerHTML = LABELS.map(lbl => `
+      <label class="checkbox-item">
+        <input type="checkbox" value="${lbl}">
+        <span>${lbl}</span>
+      </label>
+    `).join('');
+
+    // Tab Navigation
+    const tabInfBtn = document.getElementById('tab-inference-btn');
+    const tabTrainBtn = document.getElementById('tab-training-btn');
+    const sideInf = document.getElementById('sidebar-inference');
+    const sideTrain = document.getElementById('sidebar-training');
+    const workInf = document.getElementById('workspace-inference');
+    const workTrain = document.getElementById('workspace-training');
+
+    tabInfBtn.addEventListener('click', () => {
+      tabInfBtn.classList.add('active');
+      tabTrainBtn.classList.remove('active');
+      sideInf.style.display = 'block';
+      sideTrain.style.display = 'none';
+      workInf.style.display = 'flex';
+      workTrain.style.display = 'none';
+    });
+
+    tabTrainBtn.addEventListener('click', () => {
+      tabTrainBtn.classList.add('active');
+      tabInfBtn.classList.remove('active');
+      sideInf.style.display = 'none';
+      sideTrain.style.display = 'block';
+      workInf.style.display = 'none';
+      workTrain.style.display = 'flex';
+      fetchNodes();
+    });
+
+    // Health Check
+    fetch('/health')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('api-status').textContent = `Online (${data.device.toUpperCase()})`;
+      })
+      .catch(() => {
+        document.getElementById('api-status').textContent = 'API Offline';
+      });
+
+    // Inference File Input
+    const infFileInput = document.getElementById('inf-file-input');
+    const infFileName = document.getElementById('inf-file-name');
+    const rawPreview = document.getElementById('raw-preview');
+
+    infFileInput.addEventListener('change', () => {
+      const file = infFileInput.files[0];
+      if (!file) return;
+      infFileName.textContent = `Selected: ${file.name}`;
+      if (!file.name.toLowerCase().endsWith('.dcm')) {
+        rawPreview.src = URL.createObjectURL(file);
+      } else {
+        rawPreview.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23090d10'/%3E%3Ctext x='50%25' y='50%25' fill='%2300f2fe' dominant-baseline='middle' text-anchor='middle'%3EDICOM (.dcm) Loaded%3C/text%3E%3C/svg%3E";
+      }
+    });
+
+    // Draw Heatmap and Bounding Boxes
+    const overlayCanvas = document.getElementById('overlay-canvas');
+    const ctx = overlayCanvas.getContext('2d');
+
+    function renderOverlay(heatmapBase64, boundingBoxes) {
+      overlayCanvas.width = 320;
+      overlayCanvas.height = 320;
+      ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+      if (!heatmapBase64) return;
+
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, overlayCanvas.width, overlayCanvas.height);
+        ctx.strokeStyle = '#ff4d6d';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+
+        boundingBoxes.forEach(box => {
+          const scale = 320 / 224;
+          const bx = box.x * scale;
+          const by = box.y * scale;
+          const bw = box.w * scale;
+          const bh = box.h * scale;
+
+          ctx.strokeRect(bx, by, bw, bh);
+          ctx.fillStyle = 'rgba(255, 77, 109, 0.2)';
+          ctx.fillRect(bx, by, bw, bh);
+        });
+      };
+      img.src = `data:image/png;base64,${heatmapBase64}`;
+    }
+
+    // Run Inference
+    document.getElementById('inf-analyze-btn').addEventListener('click', async () => {
+      const file = infFileInput.files[0];
+      if (!file) {
+        document.getElementById('inf-status-msg').textContent = 'Please choose a scan image file first.';
+        return;
+      }
+
+      document.getElementById('inf-analyze-btn').disabled = true;
+      document.getElementById('inf-status-msg').textContent = 'Processing radiograph & stripping PHI...';
+
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+
+      const payload = {
+        image_base64: btoa(binary),
+        filename: file.name,
+        age: parseInt(document.getElementById('inf-age').value, 10),
+        sex: document.getElementById('inf-sex').value,
+        view_position: document.getElementById('inf-view').value
+      };
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Inference failed');
+
+        document.getElementById('prob-grid').innerHTML = data.probabilities.map(item => {
+          const pct = Math.round(item.probability * 100);
+          let barColor = 'var(--risk-low)';
+          if (pct >= 60) barColor = 'var(--risk-high)';
+          else if (pct >= 30) barColor = 'var(--risk-moderate)';
+
+          return `
+            <div class="prob-card" style="${pct >= 30 ? 'border-color: ' + barColor : ''}">
+              <div class="prob-header">
+                <span>${item.label}</span>
+                <span class="prob-val" style="color: ${barColor}">${pct}%</span>
+              </div>
+              <div class="bar-bg">
+                <div class="bar-fill" style="width: ${pct}%; background: ${barColor}"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        renderOverlay(data.heatmap_base64, data.bounding_boxes);
+
+        document.getElementById('report-card').style.display = 'flex';
+        document.getElementById('report-indication').textContent = data.report.indication;
+        document.getElementById('report-findings').textContent = data.report.findings;
+        document.getElementById('report-impression').textContent = data.report.impression;
+        document.getElementById('phi-stats').textContent = `${data.phi_tags_stripped} DICOM PHI tags scrubbed`;
+        document.getElementById('latency-stats').textContent = `Latency: ${data.inference_ms} ms`;
+
+        document.getElementById('inf-status-msg').textContent = 'Analysis complete!';
+      } catch (err) {
+        document.getElementById('inf-status-msg').textContent = `Error: ${err.message}`;
+      } finally {
+        document.getElementById('inf-analyze-btn').disabled = false;
+      }
+    });
+
+    // MODE 2: Local Training Script
+    const trainFileInput = document.getElementById('train-file-input');
+    const trainFileName = document.getElementById('train-file-name');
+
+    trainFileInput.addEventListener('change', () => {
+      const file = trainFileInput.files[0];
+      if (file) trainFileName.textContent = `Selected: ${file.name}`;
+    });
+
+    // Upload New Training Scan to Local Dataset
+    document.getElementById('upload-sample-btn').addEventListener('click', async () => {
+      const file = trainFileInput.files[0];
+      if (!file) {
+        document.getElementById('train-status-msg').textContent = 'Choose an image file to upload.';
+        return;
+      }
+
+      const checkedLabels = Array.from(document.querySelectorAll('#label-checkboxes input:checked')).map(cb => cb.value);
+
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+
+      const payload = {
+        node_id: document.getElementById('train-node-select').value,
+        filename: file.name,
+        image_base64: btoa(binary),
+        labels: checkedLabels,
+        age: 50, sex: 'M', view_position: 'PA'
+      };
+
+      try {
+        const res = await fetch('/api/upload-training-sample', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        document.getElementById('train-status-msg').textContent = `Added ${file.name} to ${data.node}! Total samples: ${data.samples_total}`;
+        fetchNodes();
+      } catch (err) {
+        document.getElementById('train-status-msg').textContent = `Upload failed: ${err.message}`;
+      }
+    });
+
+    // Start Local Model Training
+    document.getElementById('start-local-train-btn').addEventListener('click', async () => {
+      const nodeId = document.getElementById('train-node-select').value;
+      const epochs = document.getElementById('train-epochs').value;
+      const batchSize = document.getElementById('train-batch').value;
+
+      try {
+        const res = await fetch(`/api/train-local?node_id=${nodeId}&epochs=${epochs}&batch_size=${batchSize}`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Could not start training');
+        document.getElementById('train-status-msg').textContent = `Training initiated on ${nodeId}...`;
+        startStatusPolling();
+      } catch (err) {
+        document.getElementById('train-status-msg').textContent = `Error: ${err.message}`;
+      }
+    });
+
+    // Fetch Active Nodes
+    function fetchNodes() {
+      fetch('/api/nodes')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('node-cards-container');
+          container.innerHTML = data.nodes.map(n => `
+            <div style="background: rgba(9, 13, 16, 0.5); padding: 16px; border-radius: 10px; border: 1px solid var(--panel-border);">
+              <h4 style="color: var(--accent-teal);">${n.name}</h4>
+              <p style="font-size: 1.2rem; font-weight: 700; margin-top: 6px;">${n.samples.toLocaleString()} samples</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Type: ${n.dataset_type.toUpperCase()}</p>
+            </div>
+          `).join('');
+        });
+    }
+
+    // Status Polling for Training Progress
+    let pollInterval = null;
+    function startStatusPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(() => {
+        fetch('/api/train-status')
+          .then(res => res.json())
+          .then(state => {
+            document.getElementById('monitor-status').textContent = state.is_training ? `Training Node: ${state.node}` : 'Training Finished';
+            document.getElementById('monitor-loss').textContent = `Loss: ${state.loss}`;
+            document.getElementById('monitor-details').textContent = state.message;
+
+            const pct = state.total_steps > 0 ? Math.round((state.step / state.total_steps) * 100) : 0;
+            document.getElementById('monitor-progress-bar').style.width = `${pct}%`;
+
+            if (!state.is_training && state.step > 0) {
+              clearInterval(pollInterval);
+            }
+          });
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

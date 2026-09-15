@@ -1,0 +1,18 @@
+# Core PyTorch ML Stack
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Federated Learning Framework
+flwr>=1.4.0
+
+# Medical DICOM & Image Processing
+pydicom>=2.4.0
+Pillow>=9.5.0
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.2.0
+
+# Web Application & API Server
+fastapi>=0.100.0
+uvicorn>=0.22.0
+requests>=2.31.0

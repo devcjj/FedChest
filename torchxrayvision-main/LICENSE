@@ -1,0 +1,12 @@
+Licenses vary by subpackage 
+
+# Main library (https://www.apache.org/licenses/LICENSE-2.0)
+xrv.models:  
+xrv.autoencoders
+xrv.datasets
+xrv.utils
+testing code
+sample notebooks
+
+# Baseline models (check each model's license)
+xrv.baseline_models

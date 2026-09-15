@@ -1,0 +1,10 @@
+__pycache__
+.ipynb_checkpoints
+*.egg-info
+*.pkl
+*.mp4
+*.png
+*.DS_Store
+build
+dist
+.python-version

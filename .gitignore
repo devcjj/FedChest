@@ -1,0 +1,41 @@
+# Python Cache & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Large Datasets & Zip Archives (Do not commit to GitHub)
+*.zip
+images/
+stage_2_train_images/
+siim-acr-pneumothorax-segmentation/stage_2_images/
+siim-acr-pneumothorax-segmentation.zip
+
+# Heavy Raw Dataset Files
+Data_Entry_2017.csv
+stage_2_train_labels.csv
+stage_2_detailed_class_info.csv
+
+# Derived Hospital Data Images
+data/hospital_*/images/
+
+# Local Model Checkpoints
+checkpoints/*.pt
+!checkpoints/.gitkeep
+
+# Submodule / Source Archives
+flower-main/
+
+# OS & IDE Settings
+.DS_Store
+.idea/
+.vscode/
+*.swp
